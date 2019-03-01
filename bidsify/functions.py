@@ -169,13 +169,14 @@ def _rename_size(file_list, splitroot, sub, ses, n_sessions, destpath_abs, log_c
                                                 best_scan.split('/')[-1]
 
         new_name = 'T1w.nii'
-        path_maps[best_scan] = os.path.join(destpath_abs, sub, session, 'anat', sub+'_'+session+'_'+'_acq-MPRAGE_T1w.nii')
+        path_maps[best_scan] = os.path.join(destpath_abs, sub, session, 'anat', sub+'_'+session+'_acq-MPRAGE_T1w.nii')
 
     # deal with functional scans
     elif splitroot[-1] == 'FUNCTIONAL':
         rests = []
         mcrs = []
         swms = []
+        dds=[]
         leftovers = []
         for old_file, size in sizes_dict.items():
             # expected size of resting state scan (+/- 2kb)
@@ -183,43 +184,48 @@ def _rename_size(file_list, splitroot, sub, ses, n_sessions, destpath_abs, log_c
                 rests.append(old_file)
 
             # expected size of mcr scan (+/- 2kb)
-            elif size in range(77412752, 77416752):
+            elif size in range(77000000, 78000000):
                 mcrs.append(old_file)
 
             # expected size of swm scan (+/- 2kb)
-            elif size in range(82942352, 82946352):
+            elif size in range(79257952, 82946352):
                 swms.append(old_file)
+
+            elif size > 111594352:
+                dds.append(old_file)
             else:
                 leftovers.append(old_file)
-
         # map resting state scans
         if not rests:
             prob_fs['Resting state'] = 'No scan files matching expected size for Resting State.'
 
         elif len(rests) == 1:
-            prob_fs['Resting state'] = 'Unable to determine which Resting State scan for file: ' + rests[0]
+            rest1 = sorted(rests)[0]
+            path_maps[rest1] = os.path.join(destpath_abs, sub, session, 'func', sub+'_task-rest_run-01_bold.nii')
 
         elif len(rests) == 2:
             rest1, rest2 = sorted(rests)[0], sorted(rests)[1]
-            path_maps[rest1] = os.path.join(destpath_abs, sub, session, 'func', sub+'_task-rest_run-01_bold.nii')
-            path_maps[rest2] = os.path.join(destpath_abs, sub, session, 'func', sub+'_task-rest_run-05_bold.nii')
+            path_maps[rest1] = os.path.join(destpath_abs, sub, session, 'func', sub+'_'+session+'_task-rest_run-01_bold.nii')
+            path_maps[rest2] = os.path.join(destpath_abs, sub, session, 'func', sub+'_'+session+'_task-rest_run-05_bold.nii')
         else:
             prob_fs['Resting state'] = 'Unable to identify Resting State 1 vs 2 from choices: ' + rests[0]
 
         # map mcr scans
         if mcrs:
-            path_maps[mcrs[-1]] = os.path.join(destpath_abs, sub, session, 'func', sub+'_task-mcr_run-02_bold.nii')
+            path_maps[mcrs[-1]] = os.path.join(destpath_abs, sub, session, 'func', sub+'_'+session+'_task-mcr_run-02_bold.nii')
         else:
             prob_fs['MCR'] = 'No scan files matching expected size for MCR'
 
         # map swm scans
         if swms:
-            path_maps[swms[-1]] = os.path.join(destpath_abs, sub, session, 'func', sub+'_task-swm_run-03_bold.nii')
+            path_maps[swms[-1]] = os.path.join(destpath_abs, sub, session, 'func', sub+'_'+session+'_task-swm_run-03_bold.nii')
         else:
             prob_fs['SWM'] = 'No scan files matching expected size for SWM'
 
-        if len(leftovers) == 1:
-            path_maps[leftovers[0]] = os.path.join(destpath_abs, sub, session, 'func', sub+'_task-dd_run-04_bold.nii')
+        if len(dds) ==1:
+            path_maps[dds[0]] = os.path.join(destpath_abs, sub, session, 'func', sub+'_'+session+'_task-dd_run-04_bold.nii')
+#        if len(leftovers) == 1:
+#            path_maps[leftovers[0]] = os.path.join(destpath_abs, sub, session, 'func', sub+'_task-dd_run-04_bold.nii')
         else:
             prob_fs['DD'] = 'Unable to identify DD scan from choices: ' + str(leftovers)
 
