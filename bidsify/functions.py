@@ -201,7 +201,7 @@ def _rename_size(file_list, splitroot, sub, ses, n_sessions, destpath_abs, log_c
 
         elif len(rests) == 1:
             rest1 = sorted(rests)[0]
-            path_maps[rest1] = os.path.join(destpath_abs, sub, session, 'func', sub+'_task-rest_run-01_bold.nii')
+            path_maps[rest1] = os.path.join(destpath_abs, sub, session, 'func', sub+'_'+session+'_task-rest_run-01_bold.nii')
 
         elif len(rests) == 2:
             rest1, rest2 = sorted(rests)[0], sorted(rests)[1]
